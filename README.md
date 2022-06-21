@@ -1,22 +1,19 @@
 ### Hi there 👋 , welcome to Kin's GitHub page!
-<!--
-**Kin-Zhang/Kin-Zhang** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
-Here are some ideas to get you started:
-
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
-- ✨ I'm an MPhil Student at the Robotics Institute of The Hong Kong University of Science and Technology advised by Ming Liu.
+- ✨ I'm an MPhil Student at the Robotics Institute [RAMLAB](https://www.ram-lab.com/) of The Hong Kong University of Science and Technology advised by [Prof. Ming Liu](https://facultyprofiles.hkust.edu.hk/profiles.php?profile=ming-liu-eelium) and [Prof. Wei Zhang](https://ece.hkust.edu.hk/eeweiz) 
 - 🌱 I’m currently learning end-to-end learning for self-driving and preparing my MPhil thesis. Now, I'm also looking for a place for the next research trip.
 - 😄 I enjoy learning about different things and techniques, diving into theory, and blogging. 
-- ⚡ Life ideal: travel around the world
+- ⚡ Life ideal: travel around the world, open-source amazing project
+
+
+
+
+### (｡･∀･)ﾉﾞ嗨 👋 , 這裡是張聰明
+
+- ✨ 在[劉明教授](https://facultyprofiles.hkust.edu.hk/profiles.php?profile=ming-liu-eelium)和[張薇教授](https://ece.hkust.edu.hk/eeweiz)指導下，於香港科技大學機器人研究所RI [RAMLAB](https://www.ram-lab.com/) 攻讀研究型碩士
+- 🌱 主要研究無人駕駛中的運動規劃和端到端學習下的自動駕駛系統設計，正在準備畢業論文中。同時，準備尋找下一段旅程目的地。
+- 😄 享受學習不同的知識和技巧，喜歡探究理論部分，同時喜歡寫博客
+- ⚡ 人生理想：環遊世界，開源造福大家的東西
 
 
 ![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=kin-zhang&layout=compact)
