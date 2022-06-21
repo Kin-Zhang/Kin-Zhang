@@ -15,6 +15,9 @@
 - 😄 享受學習不同的知識和技巧，喜歡探究理論部分，同時喜歡寫博客
 - ⚡ 人生理想：環遊世界，開源造福大家的東西
 
+| <a href="https://github.com/anuraghazra/github-readme-stats"><img align="center" src="https://github-readme-stats.vercel.app/api?username=kin-zhang&show_icons=true&include_all_commits=true&theme=buefy&hide_border=true" alt="Anurag's github stats" /></a> | <a href="https://github.com/anuraghazra/github-readme-stats"><img align="center" src="https://github-readme-stats.vercel.app/api/top-langs/?username=kin-zhang&layout=compact&theme=buefy&hide_border=true" /></a> |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+
 <!---
 ![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=kin-zhang&layout=compact)
 ![kin's GitHub stats](https://github-readme-stats.vercel.app/api?username=kin-zhang&count_private=true&show_icons=true&theme=dracula)
