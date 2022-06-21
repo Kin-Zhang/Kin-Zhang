@@ -15,6 +15,7 @@
 - 😄 享受學習不同的知識和技巧，喜歡探究理論部分，同時喜歡寫博客
 - ⚡ 人生理想：環遊世界，開源造福大家的東西
 
-
+<!---
 ![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=kin-zhang&layout=compact)
 ![kin's GitHub stats](https://github-readme-stats.vercel.app/api?username=kin-zhang&count_private=true&show_icons=true&theme=dracula)
+---!>
