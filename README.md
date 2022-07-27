@@ -1,6 +1,6 @@
 ### Hi there 👋 , welcome to [Kin](https://kin-zhang.github.io/)'s GitHub page!
 
-- ✨ I'm a MPhil Student at the Robotics Institute [RAMLAB](https://www.ram-lab.com/) of The Hong Kong University of Science and Technology advised by [Prof. Ming Liu](https://facultyprofiles.hkust.edu.hk/profiles.php?profile=ming-liu-eelium) and [Prof. Wei Zhang](https://ece.hkust.edu.hk/eeweiz) 
+- ✨ I'm a MPhil Student at the Robotics Institute [RAMLAB](https://www.ram-lab.com/) of The Hong Kong University of Science and Technology, supervised by [Prof. Ming Liu](https://facultyprofiles.hkust.edu.hk/profiles.php?profile=ming-liu-eelium) and [Prof. Wei Zhang](https://ece.hkust.edu.hk/eeweiz) 
 - 🌱 I’m currently learning planning and end-to-end learning for self-driving and preparing my MPhil thesis. Now, I'm also looking for a place for the next research trip.
 - 😄 I enjoy learning about different things and techniques, diving into theory, and blogging. 
 - ⚡ Life ideal: travel around the world, open-source amazing project
