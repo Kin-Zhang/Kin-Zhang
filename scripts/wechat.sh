@@ -59,7 +59,7 @@ function pullUpdate () {
 function main () {
 
   hello
-  pullUpdate
+  # pullUpdate
 
   OPTIONS=()
 
@@ -84,7 +84,7 @@ function main () {
   # --ipc=host:   enable MIT_SHM (XWindows)
   # https://phoenixnap.com/kb/docker-run-override-entrypoint
   # -it --entrypoint /bin/bash zhangkin/wechat:rm   
-  docker run --device /dev/snd --name DoChat_test --ipc="host" \
+  docker run --device /dev/snd --name DoChat_kin --ipc="host" \
     -v "$HOME/WeChatFiles":"/WeChatFiles" \
     -v "$HOME/DoChat/Applcation Data":'/.wine/drive_c/users/user/Application Data/' \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
