@@ -21,8 +21,7 @@ image_topic_name = "/camera/color/image_raw/compressed";
 point_cloud_topic_name = "/rslidar_points";
 
 % config of extraction
-numFrameSave = 50; % note: the number will be smaller than this one since static frame skip
-time_toleration = 0.05;
+time_toleration = 0.05; % image and pcd sync time
 Dyn_threshold = 0.001; % ratio in (the image dynamic)*100 => default one is enough
 
 
@@ -81,13 +80,12 @@ if k == 1
     return
 end
 fprintf("After sync, total frames in your dataset: %d \n", length(idx));
-fprintf("But we will only save : %d as you set\n", numFrameSave);
-index_threshold = fix(length(idx)/numFrameSave) - fix(length(idx)/(5*numFrameSave)); % two data index difference need over this
-
 %%
 p_img = -1;
 p_i = -1;
-extract_len = length(idx); % only for debug
+extract_len = length(idx);
+ps_img = -1;
+ps_i = -1;
 % extract_len = 100; % only for debug
 for i = 1:extract_len
     I = readImage(imageMsgs{idx(i,1)});
@@ -104,10 +102,25 @@ for i = 1:extract_len
     Dyna_ratio = NotZeros/(NotZeros+Zeros) * 100;
     is_static2img = (Dyna_ratio<Dyn_threshold);
 
-    if ~is_static2img || abs(p_i-i)<index_threshold
-%         fprintf('\n skip this frame: %d p_i:%d i:%d \n',Dyna_ratio,p_i,i);
+    if ~is_static2img
         p_img = I;
         continue
+    end
+    if ps_img == -1
+        ps_img = I;
+        ps_i = i;
+    else
+        K = rgb2gray(imabsdiff(ps_img,I));
+        % hard code here TODO set threshold??
+        NotZeros = sum(sum(K>50));
+        Zeros = sum(sum(K<50));
+        Dyna_ratio = NotZeros/(NotZeros+Zeros) * 100;
+        is_static2img = (Dyna_ratio<(Dyn_threshold*100));
+        if is_static2img            
+%             fprintf('\n skip this frame since same location at frame ps_i:%d now index:%d Dynamic ratio: %f\n',ps_i, i, Dyna_ratio);
+            p_img = I;
+            continue
+        end
     end
     pc = pointCloud(readXYZ(pcMsgs{idx(i,2)}));
     n_strPadded = sprintf( '%04d', i ) ;
@@ -117,11 +130,14 @@ for i = 1:extract_len
     pcwrite(pc, pcFileName);
     p_img = I;
     p_i = i;
+    ps_img = I;
+    ps_i = i;
 end
 %%
 tEnd = toc(tStart);
 SavedfilesNum = numel(dir(imageFilesPath+'\*.png'));
-fprintf('\nTotal time cost: %f s \n All extract process is done. Check folder for your data: \n %s, \n %s\n',tEnd, imageFilesPath, pcFilesPath);
+fprintf('\nTotal time cost: %f s \n All extract process is done. Check folder for your data: \n %s \n %s\n',tEnd, imageFilesPath, pcFilesPath);
 fprintf(' There should be <strong>%d </strong>images and pcds inside each folder. \n', SavedfilesNum);
+fprintf(' All of these files are synced and selected automatically based on static frames in different locations. \n');
 fprintf('====== Finished Extraction ======\n');
 
