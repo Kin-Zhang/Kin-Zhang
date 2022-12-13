@@ -139,5 +139,8 @@ SavedfilesNum = numel(dir(imageFilesPath+'\*.png'));
 fprintf('\nTotal time cost: %f s \n All extract process is done. Check folder for your data: \n %s \n %s\n',tEnd, imageFilesPath, pcFilesPath);
 fprintf(' There should be <strong>%d </strong>images and pcds inside each folder. \n', SavedfilesNum);
 fprintf(' All of these files are synced and selected automatically based on static frames in different locations. \n');
+if SavedfilesNum<10
+    fprintf('Tips: the number of different location frames are small, matlab calibra recommend: <strong>10-20</strong> frames on valid and different locations\n');
+end
 fprintf('====== Finished Extraction ======\n');
 
