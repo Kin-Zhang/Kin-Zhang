@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/sh
+
 : '
 Copyright (c) 2022 KTH RPL
 Author: Kin (https://kin-zhang.github.io/)
