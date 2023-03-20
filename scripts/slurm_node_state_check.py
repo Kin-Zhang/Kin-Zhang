@@ -616,8 +616,8 @@ def parse_cmd(cmd, split=True):
 
 def node_info():
     # node info running this command: sinfo -o '%N|%G|%m|%C' --noheader -N
-    output_cmd = parse_cmd("sinfo -o '%N|%G|%m|%C' --noheader -N")
-    info_states,all_nodes = [],[]
+    output_cmd = parse_cmd("sinfo -o '%N|%G|%m|%C|%t' --noheader -N")
+    info_states,all_nodes, state = [],[], []
     for row in output_cmd:
         lists_as = row.split('|')
         node_name = lists_as[0]
@@ -628,8 +628,8 @@ def node_info():
         RAM_total = str(int(int(lists_as[2])/1000))
         
         CPU_total = lists_as[3].split('/')[-1]
-        
-        info_states.append([node_name, gpu_type, gpu_num, RAM_total, CPU_total])
+
+        info_states.append([node_name, gpu_type, gpu_num, RAM_total, CPU_total, lists_as[4]])
         all_nodes.append(node_name)
     return info_states, all_nodes
 
@@ -646,7 +646,7 @@ def node_usage(info_states, all_nodes_name):
         
         # compute the GPU usage
         if lists_as[1] == '(null)':
-            continue
+            gpu_using = 0
         else:
             gpu_using = lists_as[1].split(':')[1]
 
@@ -656,12 +656,30 @@ def node_usage(info_states, all_nodes_name):
 
         # find node name in info_states
         for state in info_states:
+            # if node name is not in final
             if state[0] == node_name:
-                gpu_AT = str(int(state[2]) - int(gpu_using))+ '/' + state[2]
-                ram_AT = str(int(state[3]) - int(ram_used)) + '/' + state[3]
-                cpu_AT = str(int(state[4]) - cpu_core) + '/' + state[4]
-                final.append([state[0], state[1], gpu_AT, cpu_AT, ram_AT])
-                break # only once since info_states has one node name once
+                if state[0] not in [x[0] for x in final]:
+                    gpu_AT = str(int(state[2]) - int(gpu_using))+ '/' + state[2]
+                    ram_AT = str(int(state[3]) - int(ram_used)) + '/' + state[3]
+                    cpu_AT = str(int(state[4]) - cpu_core) + '/' + state[4]
+                    final.append([state[0], state[1], gpu_AT, cpu_AT, ram_AT])
+                    break # only once since info_states has one node name once
+                else:
+                    # if node name is in final
+                    for i in range(len(final)):
+                        if final[i][0] == node_name and final[i][0]==state[0]:
+                            gpu_AT = str(int(final[i][2].split('/')[0]) - int(gpu_using)) + '/' + final[i][2].split('/')[1]
+                            ram_AT = str(int(final[i][4].split('/')[0]) - int(ram_used)) + '/' + final[i][4].split('/')[1]
+                            cpu_AT = str(int(final[i][3].split('/')[0]) - cpu_core) + '/' + final[i][3].split('/')[1]
+                            final[i] = [state[0], state[1], gpu_AT, cpu_AT, ram_AT]
+                            break
+        # add the nodes that are not in final and state is IDLE
+        if state[0] not in [x[0] for x in final] and (state[5] == 'idle'): #  or state[5] == 'mix'
+            gpu_AT = state[2] + '/' + state[2]
+            ram_AT = state[3] + '/' + state[3]
+            cpu_AT = state[4] + '/' + state[4]
+            final.append([state[0], state[1], gpu_AT, cpu_AT, ram_AT])
+                
     return final
 
 if __name__ == "__main__":
@@ -673,4 +691,3 @@ if __name__ == "__main__":
     final.sort(key=lambda x: int(x[2].split('/')[0]), reverse=True)
     res = tabulate(final, headers=(["Node", "GPU Type", "GPU [A/T]", "CPU [A/T]", "RAM [A/T]"]))
     print(res)
-
