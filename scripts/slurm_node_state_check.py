@@ -3,6 +3,9 @@
 # Copyright (C) 2022-now, RPL, KTH Royal Institute of Technology
 # Author: Kin ZHANG  (https://kin-zhang.github.io/)
 
+# Test both on slurm 17 and slurm 22 version...
+# run: `curl -s https://raw.githubusercontent.com/Kin-Zhang/Kin-Zhang/main/scripts/slurm_node_state_check.py | python3 -`
+
 # NOTE: part of code is from tabulate!!!
 # Please check their origin: https://github.com/gregbanks/python-tabulate
 # from tabulate import tabulate
@@ -623,7 +626,7 @@ def node_info():
         node_name = lists_as[0]
 
         gpu_type = lists_as[1].split(':')[1]
-        gpu_num = lists_as[1].split(':')[2]
+        gpu_num = lists_as[1].split(':')[2].split('(')[0]
         
         RAM_total = str(int(int(lists_as[2])/1000))
         
@@ -633,11 +636,14 @@ def node_info():
         all_nodes.append(node_name)
     return info_states, all_nodes
 
-def node_usage(info_states, all_nodes_name):
+def node_usage(info_states, all_nodes_name, slurm_version):
     # node usage running this command: squeue -o "%N|%b|%m|%C" --noheader
     # %i for job id, %u for user, %b for gpu type, %N for node name
     output_cmd = parse_cmd("squeue -o '%N|%b|%m|%C' --noheader")
     final = []
+    
+    null_gpu = '(null)' if slurm_version<20 else 'N/A'
+    
     for row in output_cmd:
         lists_as = row.split('|')
         node_name = lists_as[0]
@@ -645,10 +651,13 @@ def node_usage(info_states, all_nodes_name):
             continue
         
         # compute the GPU usage
-        if lists_as[1] == '(null)':
+        if lists_as[1] == null_gpu:
             gpu_using = 0
         else:
-            gpu_using = lists_as[1].split(':')[1]
+            if slurm_version<20:
+                gpu_using = lists_as[1].split(':')[1]
+            else:
+                gpu_using = lists_as[1].split(':')[3]
 
         # compute the RAM usage
         # if split by 'G' then it is in GB
@@ -660,9 +669,10 @@ def node_usage(info_states, all_nodes_name):
 
         # find node name in info_states
         for state in info_states:
+            node_names_in_final = [x[0] for x in final]
             # if node name is not in final
             if state[0] == node_name:
-                if state[0] not in [x[0] for x in final]:
+                if state[0] not in node_names_in_final:
                     gpu_AT = str(int(state[2]) - int(gpu_using))+ '/' + state[2]
                     ram_AT = str(int(state[3]) - int(ram_used)) + '/' + state[3]
                     cpu_AT = str(int(state[4]) - cpu_core) + '/' + state[4]
@@ -678,7 +688,7 @@ def node_usage(info_states, all_nodes_name):
                             final[i] = [state[0], state[1], gpu_AT, cpu_AT, ram_AT]
                             break
             # add the nodes that are not in final and state is IDLE
-            if state[0] not in [x[0] for x in final] and (state[5] == 'idle'): #  or state[5] == 'mix'
+            if state[0] not in node_names_in_final and (state[5] == 'idle'): #  or state[5] == 'mix'
                 gpu_AT = state[2] + '/' + state[2]
                 ram_AT = state[3] + '/' + state[3]
                 cpu_AT = state[4] + '/' + state[4]
@@ -687,11 +697,15 @@ def node_usage(info_states, all_nodes_name):
     return final
 
 if __name__ == "__main__":
-    info_states, all_nodes_name = node_info()
-    final = node_usage(info_states, all_nodes_name)
+    sv_output = parse_cmd("sinfo --version", split=False)
+    slurm_version = int(sv_output.split(' ')[-1].split('.')[0])
     print()
-    print("*: A/T means Available and Total\nNote we didn't print the ones that are drain or down which are maintained by admins\n")
+    print('Note: Your slurm version is: ', slurm_version)
+    info_states, all_nodes_name = node_info()
+    final = node_usage(info_states, all_nodes_name, slurm_version)
+    print("*: A/T means Available and Total\nNote we didn't print the ones that are drain or down which are maintained by admins")
     # sort final by CPU usage
     final.sort(key=lambda x: int(x[2].split('/')[0]), reverse=True)
     res = tabulate(final, headers=(["Node", "GPU Type", "GPU [A/T]", "CPU [A/T]", "RAM [A/T]"]))
     print(res)
+    print()
