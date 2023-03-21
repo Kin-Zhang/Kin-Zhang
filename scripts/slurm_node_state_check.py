@@ -651,7 +651,11 @@ def node_usage(info_states, all_nodes_name):
             gpu_using = lists_as[1].split(':')[1]
 
         # compute the RAM usage
-        ram_used = lists_as[2].split('G')[0]
+        # if split by 'G' then it is in GB
+        if 'G' in lists_as[2]:
+            ram_used = lists_as[2].split('G')[0]
+        elif 'M' in lists_as[2]:
+            ram_used = int(lists_as[2].split('M')[0])/1000
         cpu_core = int(lists_as[3])
 
         # find node name in info_states
