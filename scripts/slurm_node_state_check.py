@@ -677,12 +677,12 @@ def node_usage(info_states, all_nodes_name):
                             cpu_AT = str(int(final[i][3].split('/')[0]) - cpu_core) + '/' + final[i][3].split('/')[1]
                             final[i] = [state[0], state[1], gpu_AT, cpu_AT, ram_AT]
                             break
-        # add the nodes that are not in final and state is IDLE
-        if state[0] not in [x[0] for x in final] and (state[5] == 'idle'): #  or state[5] == 'mix'
-            gpu_AT = state[2] + '/' + state[2]
-            ram_AT = state[3] + '/' + state[3]
-            cpu_AT = state[4] + '/' + state[4]
-            final.append([state[0], state[1], gpu_AT, cpu_AT, ram_AT])
+            # add the nodes that are not in final and state is IDLE
+            if state[0] not in [x[0] for x in final] and (state[5] == 'idle'): #  or state[5] == 'mix'
+                gpu_AT = state[2] + '/' + state[2]
+                ram_AT = state[3] + '/' + state[3]
+                cpu_AT = state[4] + '/' + state[4]
+                final.append([state[0], state[1], gpu_AT, cpu_AT, ram_AT])
                 
     return final
 
