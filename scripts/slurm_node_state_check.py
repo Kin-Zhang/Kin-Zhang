@@ -690,7 +690,7 @@ if __name__ == "__main__":
     info_states, all_nodes_name = node_info()
     final = node_usage(info_states, all_nodes_name)
     print()
-    print("*: A/T means Available and Total\n")
+    print("*: A/T means Available and Total\nNote we didn't print the ones that are drain or down which are maintained by admins\n")
     # sort final by CPU usage
     final.sort(key=lambda x: int(x[2].split('/')[0]), reverse=True)
     res = tabulate(final, headers=(["Node", "GPU Type", "GPU [A/T]", "CPU [A/T]", "RAM [A/T]"]))
