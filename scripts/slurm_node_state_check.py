@@ -662,9 +662,10 @@ def node_usage(info_states, all_nodes_name, slurm_version):
         # compute the RAM usage
         # if split by 'G' then it is in GB
         if 'G' in lists_as[2]:
-            ram_used = lists_as[2].split('G')[0]
+            # make sure that all ram_used is int
+            ram_used = lists_as[2].split('G')[0].split('.')[0]
         elif 'M' in lists_as[2]:
-            ram_used = int(lists_as[2].split('M')[0])/1000
+            ram_used = int(lists_as[2].split('M')[0].split('.')[0])/1000
         cpu_core = int(lists_as[3])
 
         # find node name in info_states
