@@ -706,10 +706,10 @@ if __name__ == "__main__":
     print('Note: Your slurm version is: ', slurm_version)
     info_states, all_nodes_name, states = node_info()
     final = node_usage(info_states, all_nodes_name, slurm_version, states)
-    print("*: [A/T] means Available num to use and Total")
-    print("The list already sort by free resource, no alloc/drain/down since we cannot use those\n")
+    print("*: [A/T] means Available num to use and Total num in the node")
+    print("The list sort by free resource, no alloc/drain/down since they are not available at this moment\n")
     # sort final by CPU usage
     final.sort(key=lambda x: int(x[2].split('/')[0]), reverse=True)
     res = tabulate(final, headers=(["Node", "GPU Type", "GPU [A/T]", "CPU [A/T]", "RAM [A/T]"]))
     print(res)
-    print("***: [A/T] means Available num to use and Total\n")
+    print("***: [A/T] means Available num to use and Total num in the node\n")
