@@ -620,7 +620,7 @@ def parse_cmd(cmd, split=True):
 def node_info():
     # node info running this command: sinfo -o '%N|%G|%m|%C' --noheader -N
     output_cmd = parse_cmd("sinfo -o '%N|%G|%m|%C|%t' --noheader -N")
-    info_states,all_nodes, state = [],[], []
+    info_states,all_nodes, states = [],[], []
     for row in output_cmd:
         lists_as = row.split('|')
         node_name = lists_as[0]
@@ -631,12 +631,12 @@ def node_info():
         RAM_total = str(int(int(lists_as[2])/1000))
         
         CPU_total = lists_as[3].split('/')[-1]
-
+        states.append(lists_as[4])
         info_states.append([node_name, gpu_type, gpu_num, RAM_total, CPU_total, lists_as[4]])
         all_nodes.append(node_name)
-    return info_states, all_nodes
+    return info_states, all_nodes, states
 
-def node_usage(info_states, all_nodes_name, slurm_version):
+def node_usage(info_states, all_nodes_name, slurm_version, states):
     # node usage running this command: squeue -o "%N|%b|%m|%C" --noheader
     # %i for job id, %u for user, %b for gpu type, %N for node name
     output_cmd = parse_cmd("squeue -o '%N|%b|%m|%C' --noheader")
@@ -669,7 +669,9 @@ def node_usage(info_states, all_nodes_name, slurm_version):
         cpu_core = int(lists_as[3])
 
         # find node name in info_states
-        for state in info_states:
+        for ind, state in enumerate(info_states):
+            if states[ind] == 'alloc':
+                continue
             node_names_in_final = [x[0] for x in final]
             # if node name is not in final
             if state[0] == node_name:
@@ -702,11 +704,12 @@ if __name__ == "__main__":
     slurm_version = int(sv_output.split(' ')[-1].split('.')[0])
     print()
     print('Note: Your slurm version is: ', slurm_version)
-    info_states, all_nodes_name = node_info()
-    final = node_usage(info_states, all_nodes_name, slurm_version)
-    print("*: A/T means Available and Total\nNote we didn't print the ones that are drain or down which are maintained by admins")
+    info_states, all_nodes_name, states = node_info()
+    final = node_usage(info_states, all_nodes_name, slurm_version, states)
+    print("*: [A/T] means Available num to use and Total")
+    print("The list already sort by free resource, no alloc/drain/down since we cannot use those\n")
     # sort final by CPU usage
     final.sort(key=lambda x: int(x[2].split('/')[0]), reverse=True)
     res = tabulate(final, headers=(["Node", "GPU Type", "GPU [A/T]", "CPU [A/T]", "RAM [A/T]"]))
     print(res)
-    print()
+    print("***: [A/T] means Available num to use and Total\n")
