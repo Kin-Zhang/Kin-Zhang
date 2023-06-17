@@ -13,4 +13,5 @@
 - 😄 享受學習不同的知識和技巧，喜歡探究理論部分，同時喜歡寫博客
 - ⚡ 人生理想：想一些有意思idea，然後開源 耶✌️，環遊世界
 
-<a href="https://github.com/anuraghazra/github-readme-stats"><img align="center" src="https://github-readme-stats.vercel.app/api?username=kin-zhang&show_icons=true&include_all_commits=true&theme=buefy&hide_border=true" alt="Anurag's github stats" /></a>
+<!-- <a href="https://github.com/anuraghazra/github-readme-stats"><img align="center" src="https://github-readme-stats.vercel.app/api?username=kin-zhang&show_icons=true&include_all_commits=true&theme=buefy&hide_border=true" alt="Anurag's github stats" /></a>
+ -->
