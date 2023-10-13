@@ -6,8 +6,8 @@ For blog usage, please read corresponding blogs
 
 1. [wechat.sh](wechat.sh): using docker+wine to install wechat on ubuntu, read zhihu here [Ubuntu 安装使用微信 wechat (docker+wine) 详细教程](https://zhuanlan.zhihu.com/p/570187823) and reference is attached at code scripts and blog
 2. [setup_ohmyzsh.sh](setup_ohmyzsh.sh): check [following](#oh-my-zsh)
-
-3. TODO
+3. [QuickVideoViewFromImage.ipynb](QuickVideoViewFromImage.ipynb): using opencv to view images as video. Here is the demo image:
+    ![](https://github.com/Kin-Zhang/Kin-Zhang/assets/35365764/dfac284d-3be4-4e15-bbd0-5d7a5ee0ca86)
 
 
 
