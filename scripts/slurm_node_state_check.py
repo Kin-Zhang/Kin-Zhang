@@ -644,59 +644,56 @@ def node_usage(info_states, all_nodes_name, slurm_version, states):
     
     null_gpu = '(null)' if slurm_version<20 else 'N/A'
     
+    # First, add all idle nodes to final list
+    for ind, state in enumerate(info_states):
+        if states[ind] == 'idle':
+            gpu_AT = state[2] + '/' + state[2]
+            ram_AT = state[3] + '/' + state[3]
+            cpu_AT = state[4] + '/' + state[4]
+            final.append([state[0], state[1], gpu_AT, cpu_AT, ram_AT])
+    
+    # Then update nodes that are being used
     for row in output_cmd:
         lists_as = row.split('|')
         node_name = lists_as[0]
         if node_name not in all_nodes_name:
             continue
-        
+            
         # compute the GPU usage
         if lists_as[1] == null_gpu:
             gpu_using = 0
         else:
             if slurm_version<20:
-                gpu_using = lists_as[1].split(':')[1]
+                gpu_using = lists_as[1].split(':')[-1]
             else:
                 gpu_using = lists_as[1].split(':')[3]
 
         # compute the RAM usage
-        # if split by 'G' then it is in GB
         if 'G' in lists_as[2]:
-            # make sure that all ram_used is int
             ram_used = lists_as[2].split('G')[0].split('.')[0]
         elif 'M' in lists_as[2]:
             ram_used = int(lists_as[2].split('M')[0].split('.')[0])/1000
         cpu_core = int(lists_as[3])
+        
+        updata_flag = False
+        # Update the usage info for nodes in final list
+        for i in range(len(final)):
+            if final[i][0] == node_name:
+                gpu_AT = str(int(final[i][2].split('/')[0]) - int(gpu_using)) + '/' + final[i][2].split('/')[1]
+                ram_AT = str(int(final[i][4].split('/')[0]) - int(ram_used)) + '/' + final[i][4].split('/')[1]
+                cpu_AT = str(int(final[i][3].split('/')[0]) - cpu_core) + '/' + final[i][3].split('/')[1]
+                final[i] = [node_name, final[i][1], gpu_AT, cpu_AT, ram_AT]
+                updata_flag = True
+                break
+        if not updata_flag:
+            ind = all_nodes_name.index(node_name)
+            gpu_type = info_states[ind][1]
 
-        # find node name in info_states
-        for ind, state in enumerate(info_states):
-            if states[ind] == 'alloc':
-                continue
-            node_names_in_final = [x[0] for x in final]
-            # if node name is not in final
-            if state[0] == node_name:
-                if state[0] not in node_names_in_final:
-                    gpu_AT = str(int(state[2]) - int(gpu_using))+ '/' + state[2]
-                    ram_AT = str(int(state[3]) - int(ram_used)) + '/' + state[3]
-                    cpu_AT = str(int(state[4]) - cpu_core) + '/' + state[4]
-                    final.append([state[0], state[1], gpu_AT, cpu_AT, ram_AT])
-                    break # only once since info_states has one node name once
-                else:
-                    # if node name is in final
-                    for i in range(len(final)):
-                        if final[i][0] == node_name and final[i][0]==state[0]:
-                            gpu_AT = str(int(final[i][2].split('/')[0]) - int(gpu_using)) + '/' + final[i][2].split('/')[1]
-                            ram_AT = str(int(final[i][4].split('/')[0]) - int(ram_used)) + '/' + final[i][4].split('/')[1]
-                            cpu_AT = str(int(final[i][3].split('/')[0]) - cpu_core) + '/' + final[i][3].split('/')[1]
-                            final[i] = [state[0], state[1], gpu_AT, cpu_AT, ram_AT]
-                            break
-            # add the nodes that are not in final and state is IDLE
-            if state[0] not in node_names_in_final and (state[5] == 'idle'): #  or state[5] == 'mix'
-                gpu_AT = state[2] + '/' + state[2]
-                ram_AT = state[3] + '/' + state[3]
-                cpu_AT = state[4] + '/' + state[4]
-                final.append([state[0], state[1], gpu_AT, cpu_AT, ram_AT])
-                
+            gpu_AT = str(int(info_states[ind][2]) - int(gpu_using)) + '/' + info_states[ind][2]
+            cpu_AT = str(int(info_states[ind][4]) - cpu_core) + '/' + info_states[ind][4]
+            ram_AT = str(int(info_states[ind][3]) - int(ram_used)) + '/' + info_states[ind][3]
+            
+            final.append([node_name, gpu_type, gpu_AT, cpu_AT, ram_AT])
     return final
 
 if __name__ == "__main__":
