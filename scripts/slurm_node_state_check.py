@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Created: 2023-03-20 20:04
 # Copyright (C) 2022-now, RPL, KTH Royal Institute of Technology
-# Author: Kin ZHANG  (https://kin-zhang.github.io/)
+# Author: Qingwen Zhang  (https://kin-zhang.github.io/)
 
-# Test both on slurm 17 and slurm 22 version...
+# Test only on our rplgpu cluster, may not work on other clusters.
 # run: `curl -s https://raw.githubusercontent.com/Kin-Zhang/Kin-Zhang/main/scripts/slurm_node_state_check.py | python3 -`
 
 # NOTE: part of code is from tabulate!!!
@@ -13,8 +13,7 @@
 
 # -*- coding: utf-8 -*-
 
-"""Pretty-print tabular data."""
-
+"""==================> Pretty-print tabular data."""
 from __future__ import print_function
 from __future__ import unicode_literals
 from collections import namedtuple
@@ -598,11 +597,12 @@ def _format_table(fmt, headers, rows, colwidths, colaligns):
 
     return "\n".join(lines)
 
+"""==================> Pretty-print tabular data."""
 
-
-import subprocess
+import subprocess, argparse
 
 def parse_cmd(cmd, split=True):
+
     """Parse the output of a shell command...
      and if split set to true: split into a list of strings, one per line of output.
 
@@ -636,7 +636,7 @@ def node_info():
         all_nodes.append(node_name)
     return info_states, all_nodes, states
 
-def node_usage(info_states, all_nodes_name, slurm_version, states):
+def node_usage(info_states, all_nodes_name, slurm_version, states, alloc_nodes=False):
     # node usage running this command: squeue -o "%N|%b|%m|%C" --noheader
     # %i for job id, %u for user, %b for gpu type, %N for node name
     output_cmd = parse_cmd("squeue -o '%N|%b|%m|%C' --noheader")
@@ -692,21 +692,31 @@ def node_usage(info_states, all_nodes_name, slurm_version, states):
             gpu_AT = str(int(info_states[ind][2]) - int(gpu_using)) + '/' + info_states[ind][2]
             cpu_AT = str(int(info_states[ind][4]) - cpu_core) + '/' + info_states[ind][4]
             ram_AT = str(int(info_states[ind][3]) - int(ram_used)) + '/' + info_states[ind][3]
-            
             final.append([node_name, gpu_type, gpu_AT, cpu_AT, ram_AT])
+
+        # remove nodes that are not available
+        if not alloc_nodes:
+            for tmp in final:
+                for at in tmp[2:]:
+                    if at.split('/')[0] == '0':
+                        final.remove(tmp)
+                        break
     return final
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Check node usage, show available resources.")
+    parser.add_argument("--show-alloc", action="store_true", help="Print alloc node also, mainly for admin to check.")
+    args = parser.parse_args()
     sv_output = parse_cmd("sinfo --version", split=False)
     slurm_version = int(sv_output.split(' ')[-1].split('.')[0])
     print()
-    print('Note: Your slurm version is: ', slurm_version)
     info_states, all_nodes_name, states = node_info()
-    final = node_usage(info_states, all_nodes_name, slurm_version, states)
-    print("*: [A/T] means Available num to use and Total num in the node")
-    print("The list sort by free resource, no alloc/drain/down since they are not available at this moment\n")
+    final = node_usage(info_states, all_nodes_name, slurm_version, states, alloc_nodes=args.show_alloc)
+    print("The list sort by free GPU resource, no alloc/drain/down since they are not available at this moment.")
+    print("##: [A/T] means *Available* num to use and *Total* num in the node.\n")
     # sort final by CPU usage
     final.sort(key=lambda x: int(x[2].split('/')[0]), reverse=True)
     res = tabulate(final, headers=(["Node", "GPU Type", "GPU [A/T]", "CPU [A/T]", "RAM [A/T]"]))
     print(res)
-    print("***: [A/T] means Available num to use and Total num in the node\n")
+    print()
+
