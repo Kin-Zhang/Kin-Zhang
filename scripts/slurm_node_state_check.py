@@ -602,7 +602,6 @@ def _format_table(fmt, headers, rows, colwidths, colaligns):
 import subprocess, argparse
 
 def parse_cmd(cmd, split=True):
-
     """Parse the output of a shell command...
      and if split set to true: split into a list of strings, one per line of output.
 
@@ -617,106 +616,90 @@ def parse_cmd(cmd, split=True):
         output = [x for x in output.split("\n") if x]
     return output
 
-def node_info():
+def node_info(filetxt=None):
     # node info running this command: sinfo -o '%N|%G|%m|%C' --noheader -N
-    output_cmd = parse_cmd("sinfo -o '%N|%G|%m|%C|%t' --noheader -N")
-    info_states,all_nodes, states = [],[], []
+    if filetxt:
+        output = open(filetxt, 'r').read()
+        output_cmd = [x for x in output.split("\n") if x]
+    else:
+        output_cmd = parse_cmd("sinfo -o '%N|%G|%m|%C|%t' --noheader -N")
+
+    # key: node_name, value: [gpu_type, gpu_num, RAM_total, CPU_total, state]
+    node_infos = dict()
     for row in output_cmd:
         lists_as = row.split('|')
         node_name = lists_as[0]
 
         gpu_type = lists_as[1].split(':')[1]
-        gpu_num = lists_as[1].split(':')[2].split('(')[0]
+        gpu_num = int(lists_as[1].split(':')[2].split('(')[0])
         
-        RAM_total = str(int(int(lists_as[2])/1000))
-        
-        CPU_total = lists_as[3].split('/')[-1]
-        states.append(lists_as[4])
-        info_states.append([node_name, gpu_type, gpu_num, RAM_total, CPU_total, lists_as[4]])
-        all_nodes.append(node_name)
-    return info_states, all_nodes, states
+        RAM_total = int(int(lists_as[2])/1000)
+        CPU_total = int(lists_as[3].split('/')[-1])
 
-def node_usage(info_states, all_nodes_name, slurm_version, states, alloc_nodes=False):
+        if lists_as[4] not in ['mix', 'idle', 'alloc']:
+            continue
+        node_infos[node_name] = [gpu_type, gpu_num, RAM_total, CPU_total, lists_as[4]]
+    return node_infos
+
+def node_usage(node_infos, filetxt=None, alloc_nodes=False):
+    raw_nodeinfos = node_infos.copy()
     # node usage running this command: squeue -o "%N|%b|%m|%C" --noheader
     # %i for job id, %u for user, %b for gpu type, %N for node name
-    output_cmd = parse_cmd("squeue -o '%N|%b|%m|%C' --noheader")
+    if filetxt:
+        output = open(filetxt, 'r').read()
+        output_cmd = [x for x in output.split("\n") if x]
+    else:
+        output_cmd = parse_cmd("squeue -o '%N|%b|%m|%C' --noheader")
+    
+    # node_name, gpu_type, gpu_AT, cpu_AT, ram_AT
     final = []
     
-    null_gpu = '(null)' if slurm_version<20 else 'N/A'
-    
-    # First, add all idle nodes to final list
-    for ind, state in enumerate(info_states):
-        if states[ind] == 'idle':
-            gpu_AT = state[2] + '/' + state[2]
-            ram_AT = state[3] + '/' + state[3]
-            cpu_AT = state[4] + '/' + state[4]
-            final.append([state[0], state[1], gpu_AT, cpu_AT, ram_AT])
-    
-    # Then update nodes that are being used
     for row in output_cmd:
-        lists_as = row.split('|')
-        node_name = lists_as[0]
-        if node_name not in all_nodes_name:
+        used_resourced = row.split('|')
+        node_name = used_resourced[0]
+
+        if node_name not in node_infos.keys():
             continue
-            
-        # compute the GPU usage
-        if lists_as[1] == null_gpu:
-            gpu_using = 0
+        used_gpu_num = used_resourced[1]
+        if used_gpu_num == '(null)':
+            used_gpu_num = 0
         else:
-            if slurm_version<20:
-                gpu_using = lists_as[1].split(':')[-1]
-            else:
-                gpu_using = lists_as[1].split(':')[3]
+            used_gpu_num = int(used_resourced[1].split(':')[-1])
 
         # compute the RAM usage
-        if 'G' in lists_as[2]:
-            ram_used = lists_as[2].split('G')[0].split('.')[0]
-        elif 'M' in lists_as[2]:
-            ram_used = int(lists_as[2].split('M')[0].split('.')[0])/1000
-        cpu_core = int(lists_as[3])
+        if 'G' in used_resourced[2]:
+            used_ram = int(used_resourced[2].split('G')[0].split('.')[0])
+        elif 'M' in used_resourced[2]:
+            used_ram = int(used_resourced[2].split('M')[0].split('.')[0])/1000
         
-        updata_flag = False
-        # Update the usage info for nodes in final list
-        for i in range(len(final)):
-            if final[i][0] == node_name:
-                gpu_AT = str(int(final[i][2].split('/')[0]) - int(gpu_using)) + '/' + final[i][2].split('/')[1]
-                ram_AT = str(int(final[i][4].split('/')[0]) - int(ram_used)) + '/' + final[i][4].split('/')[1]
-                cpu_AT = str(int(final[i][3].split('/')[0]) - cpu_core) + '/' + final[i][3].split('/')[1]
-                final[i] = [node_name, final[i][1], gpu_AT, cpu_AT, ram_AT]
-                updata_flag = True
-                break
-        if not updata_flag:
-            ind = all_nodes_name.index(node_name)
-            gpu_type = info_states[ind][1]
-
-            gpu_AT = str(int(info_states[ind][2]) - int(gpu_using)) + '/' + info_states[ind][2]
-            cpu_AT = str(int(info_states[ind][4]) - cpu_core) + '/' + info_states[ind][4]
-            ram_AT = str(int(info_states[ind][3]) - int(ram_used)) + '/' + info_states[ind][3]
-            final.append([node_name, gpu_type, gpu_AT, cpu_AT, ram_AT])
-
-        # remove nodes that are not available
-        if not alloc_nodes:
-            for tmp in final:
-                for at in tmp[2:]:
-                    if at.split('/')[0] == '0':
-                        final.remove(tmp)
-                        break
+        used_cpucore = int(used_resourced[3])
+        node_infos[node_name] = [
+            node_infos[node_name][0], \
+            node_infos[node_name][1] - used_gpu_num, \
+            node_infos[node_name][2] - used_ram, \
+            node_infos[node_name][3] - used_cpucore]
+        
+    # info_states: [gpu_type, gpu_num, RAM_total, CPU_total, state]
+    for node_name, info_states in node_infos.items():
+        if info_states[1] == 0 and not alloc_nodes:
+            continue
+        gpu_AT = f'{int(info_states[1])}/{raw_nodeinfos[node_name][1]}'
+        ram_AT = f'{int(info_states[2])}/{raw_nodeinfos[node_name][2]}'
+        cpu_AT = f'{int(info_states[3])}/{raw_nodeinfos[node_name][3]}'
+        final.append([node_name, info_states[0], gpu_AT, cpu_AT, ram_AT])
     return final
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Check node usage, show available resources.")
     parser.add_argument("--show-alloc", action="store_true", help="Print alloc node also, mainly for admin to check.")
     args = parser.parse_args()
-    sv_output = parse_cmd("sinfo --version", split=False)
-    slurm_version = int(sv_output.split(' ')[-1].split('.')[0])
     print()
-    info_states, all_nodes_name, states = node_info()
-    final = node_usage(info_states, all_nodes_name, slurm_version, states, alloc_nodes=args.show_alloc)
-    print("The list sort by free GPU resource, no alloc/drain/down since they are not available at this moment.")
+    node_infos = node_info()
+    final = node_usage(node_infos, alloc_nodes=args.show_alloc)
+    print("The list sort by available resource at this moment.")
     print("##: [A/T] means *Available* num to use and *Total* num in the node.\n")
     # sort final by CPU usage
     final.sort(key=lambda x: int(x[2].split('/')[0]), reverse=True)
     res = tabulate(final, headers=(["Node", "GPU Type", "GPU [A/T]", "CPU [A/T]", "RAM [A/T]"]))
     print(res)
     print()
-
