@@ -2,7 +2,7 @@
 - 🌱 I'm a Ph.D. student at the [DIVISION OF ROBOTICS, PERCEPTION AND LEARNING](https://www.kth.se/is/rpl/division-of-robotics-perception-and-learning) at KTH Royal Institute of Technology, supervised by [Prof. Patric Jensfelt](https://www.kth.se/profile/patric) and [Prof. Olov Andersson](https://www.kth.se/profile/olovand). My research mainly focuses on _Self-Supervised Understanding of Dynamic Scenes_.
 - ✨ I received my MPhil in Aug 2022 at the [Robotics Institute](https://ri.hkust.edu.hk/) of The Hong Kong University of Science and Technology, supervised by [Prof. Ming Liu](https://scholar.google.com/citations?user=CdV5LfQAAAAJ) and [Prof. Wei Zhang](https://ece.hkust.edu.hk/eeweiz). My MPhil research mainly focused on end-to-end learning for self-driving and autonomous driving trajectory planning.
 - 😄 I enjoy learning about different things and techniques, diving into theory, and blogging. 
-- ⚡ Life ideal: open-source amazing project, travel around the world
+- ⚡ Life ideal: open-source amazing project, travel around the world.
 
 
 ### (｡･∀･)ﾉﾞ嗨 👋, 这里是[张清文](https://kin-zhang.github.io/)
